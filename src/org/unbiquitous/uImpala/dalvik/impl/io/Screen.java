@@ -1,7 +1,5 @@
 package org.unbiquitous.uImpala.dalvik.impl.io;
 
-import java.awt.Dimension;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -55,11 +53,16 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 		main.runOnUiThread(new Runnable() {
 			public void run() {
 				mGLView = new TouchSurfaceView(main,touch);
-				mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-				mGLView.setEGLContextClientVersion(1);
-				mGLView.setRenderer(new GL11Renderer(Screen.this));
-//				mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+				GameComponents.put(GLSurfaceView.class,mGLView);
+				
+				cofigView(mGLView);
 				main.setContentView(mGLView);
+			}
+			private void cofigView(GLSurfaceView glView) {
+				glView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+				glView.setEGLContextClientVersion(1);
+				glView.setRenderer(new GL11Renderer(Screen.this));
+//				glView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 			}
 		});
 	}
@@ -168,6 +171,7 @@ class TouchSource extends MouseSource{
 class TouchSurfaceView extends GLSurfaceView{
 
 	private TouchSource touch;
+	private GL11Renderer renderer;
 
 	public TouchSurfaceView(Context context, TouchSource touch) {
 		super(context);
@@ -178,14 +182,33 @@ class TouchSurfaceView extends GLSurfaceView{
 	public boolean onTouchEvent(MotionEvent event) {
 		touch.position.x = (int) event.getX();
 		touch.position.y = (int) event.getY();
-		Log.i("debug", "touch" + event); 
 		return super.onTouchEvent(event);
+	}
+	
+	public void setRenderer(Renderer renderer) {
+		this.renderer = (GL11Renderer) renderer;
+		super.setRenderer(renderer);
+	}
+	
+	@Override
+	public void onPause() {
+		this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		renderer.pause();
+		Log.i("debug","onPause");
+	}
+	
+	@Override
+	public void onResume() {
+		this.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+		renderer.resume();
+		Log.i("debug","onResume");
 	}
 	
 }
 
 class GL11Renderer implements GLSurfaceView.Renderer {
 	
+	private boolean active = true;
 	private Screen screen;
 
 	public GL11Renderer(Screen screen) {
@@ -193,10 +216,21 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 	}
 	
 	public void onDrawFrame(GL10 gl) {
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
-		gl.glMatrixMode(GL10.GL_PROJECTION);
-		gl.glLoadIdentity();
+		if (active){
+			clear(gl);
+			render(gl);
+		}
+	}
 
+	void pause() {
+		active = false;
+	}
+	
+	void resume(){
+		active = true;
+	}
+	
+	private void render(GL10 gl) {
 		org.unbiquitous.uImpala.dalvik.impl.core.Game game = (org.unbiquitous.uImpala.dalvik.impl.core.Game) GameComponents
 				.get(Game.class);
 		if(game != null){
@@ -204,6 +238,12 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 			//TODO: How to handle the FrameRate ?
 			game.render();
 		}
+	}
+
+	private void clear(GL10 gl) {
+		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+		gl.glMatrixMode(GL10.GL_PROJECTION);
+		gl.glLoadIdentity();
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -242,4 +282,24 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 		Log.i("debug","onSurfaceCreated");
 	}
 
+}
+
+
+class Dimension{
+	int width, height;
+
+	public Dimension() {}
+	
+	public Dimension(int width, int height) {
+		this.width = width;
+		this.height = height;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
 }
