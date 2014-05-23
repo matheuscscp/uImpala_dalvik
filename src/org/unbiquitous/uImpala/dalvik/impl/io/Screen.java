@@ -1,5 +1,7 @@
 package org.unbiquitous.uImpala.dalvik.impl.io;
 
+import java.awt.Dimension;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -10,8 +12,11 @@ import org.unbiquitous.uImpala.engine.io.KeyboardSource;
 import org.unbiquitous.uImpala.engine.io.MouseSource;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+import android.view.MotionEvent;
 
 public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 	private static class Factory implements
@@ -30,93 +35,51 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 	}
 
 	private static Screen screen = null;
+	
+	//////////////////////////////////////////////////////////
+	
 	GLSurfaceView mGLView;
 	Activity main;
+	TouchSource touch = new TouchSource();
+	Dimension size = new Dimension();
 
 	@Override
+	public void open() {
+		this.open(null, -1, -1, true, null, true);
+	}
+	
+	@Override
 	public void open(String t, int w, int h, boolean f, String i, boolean gl) {
-		Log.i("debug","start screen");
-		// TODO Auto-generated method stub
 		GameSettings settings = GameComponents.get(GameSettings.class);
 		main = (Activity) settings.get("main_activity");
 		main.runOnUiThread(new Runnable() {
 			public void run() {
-				mGLView = new GLSurfaceView(main);
+				mGLView = new TouchSurfaceView(main,touch);
 				mGLView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 				mGLView.setEGLContextClientVersion(1);
-				mGLView.setRenderer(new GL11Renderer());
+				mGLView.setRenderer(new GL11Renderer(Screen.this));
 //				mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 				main.setContentView(mGLView);
 			}
 		});
-
-		
 	}
 
-	@Override
-	public String getTitle() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setTitle(String title) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public int getWidth() {
-		// TODO Auto-generated method stub
-		return 0;
+		return (int) size.getWidth();
 	}
 
-	@Override
 	public int getHeight() {
-		// TODO Auto-generated method stub
-		return 0;
+		return (int) size.getHeight();
 	}
-
-	@Override
-	public void setSize(int width, int height) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public boolean isFullscreen() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void setFullscreen(boolean fullscreen) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public String getIcon() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setIcon(String icon) {
-		// TODO Auto-generated method stub
-
-	}
-
+	
 	@Override
 	public boolean isCloseRequested() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public MouseSource getMouse() {
-		// TODO Auto-generated method stub
-		return null;
+		return touch;
 	}
 
 	@Override
@@ -154,9 +117,81 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 		return false;
 	}
 
+	public String getTitle() {return null;}
+	/**
+	 * Takes no effect on Android
+	 */
+	public void setTitle(String title) {}
+
+
+	/**
+	 * Takes no effect on Android
+	 */
+	public void setSize(int width, int height) {}
+
+	public boolean isFullscreen() {return true;}
+
+	/**
+	 * Takes no effect on Android
+	 */
+	public void setFullscreen(boolean fullscreen) {}
+
+	public String getIcon() {return null;}
+
+	/**
+	 * Takes no effect on Android
+	 */
+	public void setIcon(String icon) {}
+
+	
+}
+
+
+class TouchSource extends MouseSource{
+
+	Point position = new Point();
+	
+	public TouchSource() {
+		super(1);
+	}
+	
+	public int getX() {
+		return position.x;
+	}
+	
+	public int getY() {
+		return position.y;
+	}
+	
+}
+
+class TouchSurfaceView extends GLSurfaceView{
+
+	private TouchSource touch;
+
+	public TouchSurfaceView(Context context, TouchSource touch) {
+		super(context);
+		this.touch = touch;
+	}
+	
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		touch.position.x = (int) event.getX();
+		touch.position.y = (int) event.getY();
+		Log.i("debug", "touch" + event); 
+		return super.onTouchEvent(event);
+	}
+	
 }
 
 class GL11Renderer implements GLSurfaceView.Renderer {
+	
+	private Screen screen;
+
+	public GL11Renderer(Screen screen) {
+		this.screen = screen;
+	}
+	
 	public void onDrawFrame(GL10 gl) {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 		gl.glMatrixMode(GL10.GL_PROJECTION);
@@ -176,6 +211,8 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 			height = 1; // Making Height Equal One
 		}
 
+		screen.size = new Dimension(width, height);
+		
 		gl.glViewport(0, 0, width, height); // Reset The Current Viewport
 		gl.glOrthof(0, width, height, 0, 0, 1); // Set to use 2D Graphs with
 												// Cartesian coordinates
