@@ -4,7 +4,6 @@ import org.unbiquitous.uImpala.dalvik.impl.asset.AssetManager;
 import org.unbiquitous.uImpala.dalvik.impl.io.Screen;
 import org.unbiquitous.uImpala.dalvik.impl.io.Speaker;
 import org.unbiquitous.uImpala.dalvik.impl.time.Time;
-import org.unbiquitous.uImpala.engine.core.GameScene;
 import org.unbiquitous.uImpala.engine.core.GameSettings;
 
 import android.app.Activity;
