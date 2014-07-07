@@ -17,7 +17,7 @@ public class Game extends org.unbiquitous.uImpala.engine.core.Game {
 	  }
 	  new AsyncTask<Void, Void, Void>() {
 		protected Void doInBackground(Void ... params) {
-			run(Game.class.getName(), settings);
+			run(Game.class, settings);
 			return null;
 		}
 	}.execute();
