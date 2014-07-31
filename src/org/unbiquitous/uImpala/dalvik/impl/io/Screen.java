@@ -3,6 +3,7 @@ package org.unbiquitous.uImpala.dalvik.impl.io;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import org.unbiquitous.uImpala.dalvik.impl.core.Game.RenderLock;
 import org.unbiquitous.uImpala.engine.core.Game;
 import org.unbiquitous.uImpala.engine.core.GameComponents;
 import org.unbiquitous.uImpala.engine.core.GameSettings;
@@ -62,6 +63,7 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 				glView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 				glView.setEGLContextClientVersion(1);
 				glView.setRenderer(new GL11Renderer(Screen.this));
+				GameComponents.put(org.unbiquitous.uImpala.engine.io.Screen.class, Screen.this);
 //				glView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 			}
 		});
@@ -216,7 +218,9 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 	}
 	
 	public void onDrawFrame(GL10 gl) {
-		if (active){
+		RenderLock renderLock = GameComponents.get(RenderLock.class);
+		if (active ){
+			renderLock.waitForRender();
 			clear(gl);
 			render(gl);
 		}
@@ -235,7 +239,6 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 				.get(Game.class);
 		if(game != null){
 			GameComponents.put(GL10.class, gl);
-			//TODO: How to handle the FrameRate ?
 			game.render();
 		}
 	}
@@ -253,9 +256,37 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 
 		screen.size = new Dimension(width, height);
 		
-		gl.glViewport(0, 0, width, height); // Reset The Current Viewport
-		gl.glOrthof(0, width, height, 0, 0, 1); // Set to use 2D Graphs with
-												// Cartesian coordinates
+		gl.glEnable(GL10.GL_TEXTURE_2D);
+	    
+		gl.glShadeModel(GL10.GL_SMOOTH); // Enable Smooth Shading
+		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f); // Black Background
+		gl.glClearDepthf(1.0f); // Depth Buffer Setup
+		gl.glEnable(GL10.GL_DEPTH_TEST); // Enables Depth Testing
+		gl.glDepthFunc(GL10.GL_LEQUAL); // The Type Of Depth Testing To Do
+		gl.glHint(GL10.GL_POLYGON_SMOOTH_HINT, GL10.GL_NICEST);
+		
+	    // enable blend
+	    gl.glEnable(GL10.GL_BLEND);
+	    gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+	    
+	    gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+		// Really Nice Perspective Calculations
+		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+	    
+	    // backbuffer size
+	    gl.glViewport(0, 0, screen.size.width, screen.size.height);
+	    
+	    // setup projection
+	    gl.glMatrixMode(GL10.GL_PROJECTION);
+	    gl.glLoadIdentity();
+	    gl.glOrthof(0, screen.size.width, screen.size.height, 0, -1, 1);
+//	    
+	    // clears matrix
+	    gl.glMatrixMode(GL10.GL_MODELVIEW);
+	    gl.glLoadIdentity();
+		
+	    gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+		
 		GameComponents.put(GL10.class, gl);
 		Log.i("debug","onSurfaceChanged");
 	}
@@ -264,20 +295,22 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 	 * The Surface is created/init()
 	 */
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		gl.glEnable(GL10.GL_TEXTURE_2D); // enable texture
+		/*gl.glEnable(GL10.GL_TEXTURE_2D); // enable texture
 
 		gl.glShadeModel(GL10.GL_SMOOTH); // Enable Smooth Shading
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f); // Black Background
 		gl.glClearDepthf(1.0f); // Depth Buffer Setup
 		gl.glEnable(GL10.GL_DEPTH_TEST); // Enables Depth Testing
 		gl.glDepthFunc(GL10.GL_LEQUAL); // The Type Of Depth Testing To Do
-
-		// enable blend
-		gl.glEnable(GL10.GL_BLEND);
+		gl.glHint(GL10.GL_POLYGON_SMOOTH_HINT, GL10.GL_NICEST);
+		gl.glEnable(GL10.GL_BLEND);// enable blend
 		gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+//		gl.glBlendFunc(GL10.GL_SRC_ALPHA_SATURATE, GL10.GL_ONE);
 
+//		gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
 		// Really Nice Perspective Calculations
-		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);*/
+		
 		GameComponents.put(GL10.class, gl);
 		Log.i("debug","onSurfaceCreated");
 	}
