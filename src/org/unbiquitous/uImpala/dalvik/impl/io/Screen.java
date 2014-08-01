@@ -1,5 +1,7 @@
 package org.unbiquitous.uImpala.dalvik.impl.io;
 
+import java.util.logging.Level;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -9,6 +11,7 @@ import org.unbiquitous.uImpala.engine.core.GameComponents;
 import org.unbiquitous.uImpala.engine.core.GameSettings;
 import org.unbiquitous.uImpala.engine.io.KeyboardSource;
 import org.unbiquitous.uImpala.engine.io.MouseSource;
+import org.unbiquitous.uos.core.UOSLogging;
 
 import android.app.Activity;
 import android.content.Context;
@@ -37,14 +40,23 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 	
 	//////////////////////////////////////////////////////////
 	
-	GLSurfaceView mGLView;
-	Activity main;
-	TouchSource touch = new TouchSource();
-	Dimension size = new Dimension();
+	private GLSurfaceView mGLView;
+	private Activity main;
+	private TouchSource touch = new TouchSource();
+	protected Dimension size = new Dimension();
+	private boolean ready = false;
 
 	@Override
 	public void open() {
 		this.open(null, -1, -1, true, null, true);
+	}
+	
+	public boolean isReady(){
+		return ready;
+	}
+	
+	protected void markReady(){
+		ready = true;
 	}
 	
 	@Override
@@ -67,6 +79,15 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 //				glView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 			}
 		});
+		synchronized (this) {
+			if(!isReady()){
+				try {
+					this.wait();
+				} catch (InterruptedException e) {
+					UOSLogging.getLogger().log(Level.SEVERE,"Not possible to init screen", e);
+				}
+			}
+		}
 	}
 
 	public int getWidth() {
@@ -288,6 +309,10 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 	    gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		
 		GameComponents.put(GL10.class, gl);
+		synchronized (screen){
+			screen.markReady();
+			screen.notifyAll();
+		}
 		Log.i("debug","onSurfaceChanged");
 	}
 

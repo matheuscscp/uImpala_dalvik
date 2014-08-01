@@ -3,7 +3,6 @@ package org.unbiquitous.uImpala.dalvik.impl.asset;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
