@@ -15,6 +15,8 @@ import org.unbiquitous.uImpala.engine.io.Screen;
 import org.unbiquitous.uImpala.util.Color;
 import org.unbiquitous.uImpala.util.math.Point;
 
+import android.util.Log;
+
 public class SimetricShape extends org.unbiquitous.uImpala.engine.asset.SimetricShape {
 
 	private float angleInDegrees;
@@ -35,11 +37,11 @@ public class SimetricShape extends org.unbiquitous.uImpala.engine.asset.Simetric
 	}
 	
 	private void calculateVertex(int sides) {
-		ByteBuffer byteBuf = ByteBuffer.allocateDirect(3 * sides * 4);
+		List<Point> points = createPointList();
+		
+		ByteBuffer byteBuf = ByteBuffer.allocateDirect(3 * points.size() * 4);
 		byteBuf.order(ByteOrder.nativeOrder());
 		vertexBuffer = byteBuf.asFloatBuffer();
-		
-		List<Point> points = createPointList();
 		
 		vertices = toVertexArray(points);
 		vertexBuffer.put(vertices);
@@ -47,24 +49,26 @@ public class SimetricShape extends org.unbiquitous.uImpala.engine.asset.Simetric
 	}
 	private List<Point> createPointList() {
 		List<Point> points = new ArrayList<Point>();
-		for (float i = 0; i < 360 ; i += ((float) 360) / sides) {
-			float degrees = i + 45;
-			float degInRad = (float) Math.toRadians(degrees);
-			float x = (float) (Math.cos(degInRad) * radius);
-			float y = (float) (Math.sin(degInRad) * radius);
-			points.add(new Point((int)x,(int)y));
-		}
 		
-		Collections.sort(points, new Comparator<Point>() {
-			public int compare(Point a, Point b) {
-				return a.x-b.x + a.y-b.y;
+		
+		for (double i = 0; i <= 360; i+=((float)360)/sides) {
+			double degrees = i+45;
+			double degInRad = Math.toRadians(degrees);
+			double x = Math.cos(degInRad) * radius;
+			double y = Math.sin(degInRad) * radius;
+			points.add(new Point((int)x,(int)y));
+			//Close the triangles
+			if (points.size() %2 == 0){
+				points.add(new Point(0,0));
 			}
-		});
+		}
+//		points.add(points.get(0));
+		
 		return points;
 	}
 
 	private float[] toVertexArray(List<Point> points) {
-		float vertices[] = new float[3 * sides];
+		float vertices[] = new float[3 * points.size()];
 		int index = 0;
 		for(Point p : points){
 			vertices[index++] = p.x ;

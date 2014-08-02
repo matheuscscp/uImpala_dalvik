@@ -241,7 +241,7 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(GL10 gl) {
 		RenderLock renderLock = GameComponents.get(RenderLock.class);
 		if (active ){
-			renderLock.waitForRender();
+			renderLock.notifyRendered();
 			clear(gl);
 			render(gl);
 		}

@@ -36,33 +36,33 @@ public class Game extends org.unbiquitous.uImpala.engine.core.Game {
 
 	@Override
 	protected void renderScenes() {
-		GameComponents.get(RenderLock.class).allowToRender();
+		RenderLock lock = GameComponents.get(RenderLock.class);
+		lock.requestRender();
 	}
-
+	
+	/*
+	 * This lock allows to sync the rendering thread with the game thread
+	 */
 	public static class RenderLock {
+		public void requestRender(){
+			notifyAndWait();
+		}
 
-		private boolean canRender = false;
-
-		public void waitForRender() {
+		public void notifyRendered(){
+			notifyAndWait();
+		}
+		
+		private void notifyAndWait() {
 			synchronized (this) {
 				try {
+					this.notifyAll();
 					this.wait();
 				} catch (InterruptedException e) {
 					throw new RuntimeException(e);
 				}
 			}
 		}
-
-		public void allowToRender() {
-			synchronized (this) {
-				this.notifyAll();
-			}
-		}
-
-		public boolean canRender() {
-			return canRender;
-		}
-
+		
 	}
 
 	public void render() {
