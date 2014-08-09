@@ -52,19 +52,22 @@ public class SimetricShape extends org.unbiquitous.uImpala.engine.asset.Simetric
 		
 		
 		for (double i = 0; i <= 360; i+=((float)360)/sides) {
-			double degrees = i+45;
-			double degInRad = Math.toRadians(degrees);
-			double x = Math.cos(degInRad) * radius;
-			double y = Math.sin(degInRad) * radius;
-			points.add(new Point((int)x,(int)y));
-			//Close the triangles
-			if (points.size() %2 == 0){
-				points.add(new Point(0,0));
-			}
+			addVertex(points, radius, i+45);
 		}
 //		points.add(points.get(0));
 		
 		return points;
+	}
+
+	private void addVertex(List<Point> points,double radius, double degrees) {
+		double degInRad = Math.toRadians(degrees);
+		double x = Math.cos(degInRad) * radius;
+		double y = Math.sin(degInRad) * radius;
+		points.add(new Point((int)x,(int)y));
+		//Close the triangles
+		if (points.size() %2 == 0){
+			points.add(new Point(0,0));
+		}
 	}
 
 	private float[] toVertexArray(List<Point> points) {
