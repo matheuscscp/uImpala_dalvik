@@ -10,6 +10,8 @@ import org.unbiquitous.uImpala.engine.core.Game;
 import org.unbiquitous.uImpala.engine.core.GameComponents;
 import org.unbiquitous.uImpala.engine.core.GameSettings;
 import org.unbiquitous.uImpala.engine.io.KeyboardSource;
+import org.unbiquitous.uImpala.engine.io.MouseEvent;
+import org.unbiquitous.uImpala.engine.io.MouseManager;
 import org.unbiquitous.uImpala.engine.io.MouseSource;
 import org.unbiquitous.uos.core.UOSLogging;
 
@@ -66,6 +68,9 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 		main.runOnUiThread(new Runnable() {
 			public void run() {
 				mGLView = new TouchSurfaceView(main,touch);
+				if (GameComponents.get(MouseManager.class) != null){
+					 GameComponents.get(MouseManager.class).add(touch);
+				}
 				GameComponents.put(GLSurfaceView.class,mGLView);
 				
 				cofigView(mGLView);
@@ -205,6 +210,7 @@ class TouchSurfaceView extends GLSurfaceView{
 	public boolean onTouchEvent(MotionEvent event) {
 		touch.position.x = (int) event.getX();
 		touch.position.y = (int) event.getY();
+		touch.add(new MouseEvent(MouseSource.EVENT_BUTTON_DOWN, touch.position.x, touch.position.y, 0));
 		return super.onTouchEvent(event);
 	}
 	
@@ -215,14 +221,14 @@ class TouchSurfaceView extends GLSurfaceView{
 	
 	@Override
 	public void onPause() {
-		this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+//		this.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		renderer.pause();
 		Log.i("debug","onPause");
 	}
 	
 	@Override
 	public void onResume() {
-		this.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+//		this.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 		renderer.resume();
 		Log.i("debug","onResume");
 	}
