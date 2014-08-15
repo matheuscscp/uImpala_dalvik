@@ -7,7 +7,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import org.unbiquitous.uImpala.dalvik.impl.core.Game.RenderLock;
 import org.unbiquitous.uImpala.engine.core.Game;
-import org.unbiquitous.uImpala.engine.core.GameComponents;
+import org.unbiquitous.uImpala.engine.core.GameSingletons;
 import org.unbiquitous.uImpala.engine.core.GameSettings;
 import org.unbiquitous.uImpala.engine.io.KeyboardSource;
 import org.unbiquitous.uImpala.engine.io.MouseEvent;
@@ -63,15 +63,15 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 	
 	@Override
 	public void open(String t, int w, int h, boolean f, String i, boolean gl) {
-		GameSettings settings = GameComponents.get(GameSettings.class);
+		GameSettings settings = GameSingletons.get(GameSettings.class);
 		main = (Activity) settings.get("main_activity");
 		main.runOnUiThread(new Runnable() {
 			public void run() {
 				mGLView = new TouchSurfaceView(main,touch);
-				if (GameComponents.get(MouseManager.class) != null){
-					 GameComponents.get(MouseManager.class).add(touch);
+				if (GameSingletons.get(MouseManager.class) != null){
+					 GameSingletons.get(MouseManager.class).add(touch);
 				}
-				GameComponents.put(GLSurfaceView.class,mGLView);
+				GameSingletons.put(GLSurfaceView.class,mGLView);
 				
 				cofigView(mGLView);
 				main.setContentView(mGLView);
@@ -80,7 +80,7 @@ public class Screen extends org.unbiquitous.uImpala.engine.io.Screen {
 				glView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
 				glView.setEGLContextClientVersion(1);
 				glView.setRenderer(new GL11Renderer(Screen.this));
-				GameComponents.put(org.unbiquitous.uImpala.engine.io.Screen.class, Screen.this);
+				GameSingletons.put(org.unbiquitous.uImpala.engine.io.Screen.class, Screen.this);
 //				glView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 			}
 		});
@@ -245,7 +245,7 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 	}
 	
 	public void onDrawFrame(GL10 gl) {
-		RenderLock renderLock = GameComponents.get(RenderLock.class);
+		RenderLock renderLock = GameSingletons.get(RenderLock.class);
 		if (active ){
 			renderLock.notifyRendered();
 			clear(gl);
@@ -262,10 +262,10 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 	}
 	
 	private void render(GL10 gl) {
-		org.unbiquitous.uImpala.dalvik.impl.core.Game game = (org.unbiquitous.uImpala.dalvik.impl.core.Game) GameComponents
+		org.unbiquitous.uImpala.dalvik.impl.core.Game game = (org.unbiquitous.uImpala.dalvik.impl.core.Game) GameSingletons
 				.get(Game.class);
 		if(game != null){
-			GameComponents.put(GL10.class, gl);
+			GameSingletons.put(GL10.class, gl);
 			game.render();
 		}
 	}
@@ -314,7 +314,7 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 		
 	    gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		
-		GameComponents.put(GL10.class, gl);
+		GameSingletons.put(GL10.class, gl);
 		synchronized (screen){
 			screen.markReady();
 			screen.notifyAll();
@@ -342,7 +342,7 @@ class GL11Renderer implements GLSurfaceView.Renderer {
 		// Really Nice Perspective Calculations
 		gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);*/
 		
-		GameComponents.put(GL10.class, gl);
+		GameSingletons.put(GL10.class, gl);
 		Log.i("debug","onSurfaceCreated");
 	}
 

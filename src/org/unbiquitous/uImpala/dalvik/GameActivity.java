@@ -1,7 +1,7 @@
 package org.unbiquitous.uImpala.dalvik;
 
 import org.unbiquitous.uImpala.dalvik.impl.core.Game;
-import org.unbiquitous.uImpala.engine.core.GameComponents;
+import org.unbiquitous.uImpala.engine.core.GameSingletons;
 import org.unbiquitous.uImpala.engine.core.GameSettings;
 import org.unbiquitous.uos.core.ClassLoaderUtils;
 
@@ -17,7 +17,7 @@ public class GameActivity extends Activity {
 		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN); // (NEW)
 
-		GameComponents.get(Class.class); // Force everybody to be on the same
+		GameSingletons.get(Class.class); // Force everybody to be on the same
 											// Thread Tree
 
 		ClassLoaderUtils.builder = new ClassLoaderUtils.DefaultClassLoaderBuilder() {
@@ -31,7 +31,7 @@ public class GameActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		GLSurfaceView glSurface = GameComponents.get(GLSurfaceView.class);
+		GLSurfaceView glSurface = GameSingletons.get(GLSurfaceView.class);
 		if(glSurface != null){
 			glSurface.onResume();
 		}
@@ -40,7 +40,7 @@ public class GameActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		GLSurfaceView glSurface = GameComponents.get(GLSurfaceView.class);
+		GLSurfaceView glSurface = GameSingletons.get(GLSurfaceView.class);
 		if(glSurface != null){
 			glSurface.onPause();
 		}

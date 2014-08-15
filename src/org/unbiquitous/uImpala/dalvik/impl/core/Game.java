@@ -4,7 +4,7 @@ import org.unbiquitous.uImpala.dalvik.impl.asset.AssetManager;
 import org.unbiquitous.uImpala.dalvik.impl.io.Screen;
 import org.unbiquitous.uImpala.dalvik.impl.io.Speaker;
 import org.unbiquitous.uImpala.dalvik.impl.time.Time;
-import org.unbiquitous.uImpala.engine.core.GameComponents;
+import org.unbiquitous.uImpala.engine.core.GameSingletons;
 import org.unbiquitous.uImpala.engine.core.GameSettings;
 
 import android.app.Activity;
@@ -31,12 +31,12 @@ public class Game extends org.unbiquitous.uImpala.engine.core.Game {
 		Time.initImpl();
 		Screen.initImpl();
 		Speaker.initImpl();
-		GameComponents.put(RenderLock.class, new RenderLock());
+		GameSingletons.put(RenderLock.class, new RenderLock());
 	}
 
 	@Override
 	protected void renderScenes() {
-		RenderLock lock = GameComponents.get(RenderLock.class);
+		RenderLock lock = GameSingletons.get(RenderLock.class);
 		lock.requestRender();
 	}
 	
